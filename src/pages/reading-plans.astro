@@ -1,0 +1,202 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+---
+
+<MainLayout title="Reading Plans - Bible Daily" description="Structured Bible reading plans to grow in God's Word.">
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="mb-12">
+      <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 dark:text-white mb-3">
+        Reading Plans
+      </h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+        Journey through Scripture with structured reading plans. From 30-day overviews to year-long journeys.
+      </p>
+    </header>
+
+    <ReadingPlansList client:visible />
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
+  import { Button } from '@/components/ui/Button';
+  import { BookOpen, CheckCircle, Clock, ArrowRight, Calendar, Percent } from 'lucide-react';
+
+  const readingPlans = [
+    {
+      id: 'new-testament-30',
+      title: 'New Testament in 30 Days',
+      description: 'Read through the entire New Testament in one month. Perfect for gaining a comprehensive view of Jesus and the early church.',
+      duration: '30 days',
+      chaptersPerDay: '9',
+      totalChapters: 260,
+      progress: 0,
+      color: 'primary',
+      icon: '📖',
+    },
+    {
+      id: 'gospels-40',
+      title: 'The Four Gospels in 40 Days',
+      description: 'Walk with Jesus through Matthew, Mark, Luke, and John. Ideal for Lent or any season of focusing on Christ.',
+      duration: '40 days',
+      chaptersPerDay: '2-3',
+      totalChapters: 89,
+      progress: 0,
+      color: 'secondary',
+      icon: '✝️',
+    },
+    {
+      id: 'psalms-30',
+      title: 'Psalms in 30 Days',
+      description: 'Pray through the Psalter - the Bible's prayer book. Five psalms a day to shape your heart.',
+      duration: '30 days',
+      chaptersPerDay: '5',
+      totalChapters: 150,
+      progress: 0,
+      color: 'accent',
+      icon: '🎵',
+    },
+    {
+      id: 'proverbs-31',
+      title: 'Proverbs in 31 Days',
+      description: 'One chapter a day for a month of wisdom. Perfect for daily morning reading.',
+      duration: '31 days',
+      chaptersPerDay: '1',
+      totalChapters: 31,
+      progress: 0,
+      color: 'orange',
+      icon: '💡',
+    },
+    {
+      id: 'bible-in-year',
+      title: 'Bible in One Year',
+      description: 'The classic plan: Old Testament, New Testament, and Psalm/Proverb each day. Complete the entire Bible.',
+      duration: '365 days',
+      chaptersPerDay: '3-4',
+      totalChapters: 1189,
+      progress: 0,
+      color: 'blue',
+      icon: '📚',
+    },
+    {
+      id: 'chronological-90',
+      title: 'Chronological Bible in 90 Days',
+      description: 'Read the Bible in historical order. See God\'s redemptive story unfold from Genesis to Revelation.',
+      duration: '90 days',
+      chaptersPerDay: '12-15',
+      totalChapters: 1189,
+      progress: 0,
+      color: 'purple',
+      icon: '⏳',
+    },
+  ];
+
+  function ReadingPlansList() {
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {readingPlans.map((plan) => (
+            <ReadingPlanCard key={plan.id} plan={plan} />
+          ))}
+        </div>
+
+        {/* Coming Soon */}
+        <Card variant="outlined" padding="lg" className="text-center">
+          <div className="text-5xl mb-4">🚧</div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            More Plans Coming Soon
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            We're working on topical plans (Marriage, Parenting, Anxiety, Leadership), seasonal plans (Advent, Lent), and customizable reading schedules.
+          </p>
+          <Button variant="outline">Notify Me</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  function ReadingPlanCard({ plan }: { plan: typeof readingPlans[0] }) {
+    const colorClasses = {
+      primary: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border-primary-200 dark:border-primary-800',
+      secondary: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 border-secondary-200 dark:border-secondary-800',
+      accent: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 border-accent-200 dark:border-accent-800',
+      orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+      blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+      purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+    };
+
+    const bgClass = colorClasses[plan.color as keyof typeof colorClasses] || colorClasses.primary;
+
+    return (
+      <Card variant="elevated" padding="none" className="overflow-hidden hover:shadow-elevated transition-shadow">
+        <div className={cn('p-6', bgClass)}>
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-4xl">{plan.icon}</span>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-2">{plan.title}</h3>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="p-6 space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">{plan.description}</p>
+
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <Calendar className="h-4 w-4" />
+                <span>{plan.duration}</span>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <BookOpen className="h-4 w-4" />
+                <span>{plan.chaptersPerDay}/day</span>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <Clock className="h-4 w-4" />
+                <span>{plan.totalChapters} ch.</span>
+              </div>
+            </div>
+          </div>
+
+          {plan.progress > 0 && (
+            <div className="pt-2">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                <span className="font-medium text-gray-900 dark:text-white">{plan.progress}%</span>
+              </div>
+              <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all', bgClass.replace('bg-', 'bg-').replace('text-', 'bg-').replace('border-', 'bg-'))}
+                  style={{ width: `${plan.progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <Button
+            variant={plan.progress > 0 ? 'primary' : 'outline'}
+            fullWidth
+            onClick={() => {}}
+          >
+            {plan.progress > 0 ? 'Continue Reading' : 'Start Plan'}
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+</script>

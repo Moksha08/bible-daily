@@ -1,0 +1,324 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { usePrayer } from '@/hooks/usePrayers';
+import { useParams } from 'astro:transitions';
+---
+
+<MainLayout 
+  title="Prayer - Bible Daily" 
+  description="Read and pray with this guided prayer."
+>
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <PrayerPage client:load />
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  import { useState, useEffect } from 'react';
+  import { usePrayer } from '@/hooks/usePrayers';
+  import { useParams } from 'astro:transitions';
+  import { Card, CardContent } from '@/components/ui/Card';
+  import { Button } from '@/components/ui/Button';
+  import { ArrowLeft, Share2, Copy, Volume2, Heart, BookOpen, Clock, Check, ChevronDown, ChevronUp } from 'lucide-react';
+  import { useApp } from '@/context/AppContext';
+  import { cn } from '@/lib/utils';
+  import { getReadingTime } from '@/lib/utils';
+
+  function PrayerPage() {
+    const params = useParams();
+    const prayerId = params.id;
+    const { prayer, loading, error } = usePrayer(prayerId);
+    const { language, resolvedTheme, toggleFavoritePrayer, isFavoritePrayer, addRecentPrayer } = useApp();
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [audioPlaying, setAudioPlaying] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+
+    const isFav = prayer ? isFavoritePrayer(prayer.id) : false;
+    const readingTime = prayer ? (prayer.duration || getReadingTime(prayer.content)) : 0;
+    const formattedTime = `${Math.floor(readingTime / 60)}:${(readingTime % 60).toString().padStart(2, '0')}`;
+
+    const handleFavorite = () => {
+      if (prayer) toggleFavoritePrayer(prayer);
+    };
+
+    const handleCopy = async () => {
+      if (!prayer) return;
+      const text = `${prayer.title}\n\n${prayer.content}\n\n— Bible Daily`;
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleShare = async () => {
+      if (!prayer) return;
+      const text = `${prayer.title}\n\n${prayer.content}\n\n— Bible Daily`;
+      try {
+        await navigator.share({
+          title: prayer.title,
+          text,
+          url: window.location.href,
+        });
+      } catch {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+      setShowShareModal(false);
+    };
+
+    const handleAudio = () => {
+      setAudioPlaying(true);
+      setTimeout(() => setAudioPlaying(false), 3000);
+    };
+
+    const handlePress = () => {
+      if (prayer) addRecentPrayer(prayer);
+    };
+
+    useEffect(() => {
+      handlePress();
+    }, []);
+
+    if (loading) {
+      return (
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <Card variant="elevated" padding="lg">
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    if (error || !prayer) {
+      return (
+        <Card variant="elevated" padding="lg" className="text-center">
+          <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+          <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">Prayer not found</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{error || 'This prayer does not exist'}</p>
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Go Back
+          </Button>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Back Navigation */}
+        <div className="flex items-center gap-2">
+          <a href="/prayers" className="flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline">
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Prayers</span>
+          </a>
+        </div>
+
+        {/* Main Prayer Card */}
+        <Card variant="elevated" padding="lg" className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 opacity-5 hidden lg:block">
+            <BookOpen className="h-32 w-32 text-primary-500" />
+          </div>
+
+          <div className="relative z-10">
+            {/* Topic Badge */}
+            <span className="inline-block px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium mb-4">
+              {prayer.topic}
+            </span>
+
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-900 dark:text-white mb-4">
+              {prayer.title}
+            </h1>
+
+            {/* Meta Info */}
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {formattedTime} min read
+              </span>
+              {prayer.subtopic && (
+                <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-[11px]">
+                  {prayer.subtopic}
+                </span>
+              )}
+            </div>
+
+            {/* Prayer Content */}
+            <div className={cn(
+              'prose prose-gray dark:prose-invert max-w-none mb-8',
+              language === 'hi' && 'font-hindi',
+              !expanded && 'line-clamp-10'
+            )}>
+              <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {prayer.content}
+              </p>
+            </div>
+
+            {/* Expand/Collapse */}
+            {prayer.content.split('\n').length > 10 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpanded(!expanded)}
+                className="mb-6"
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-2" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Continue Reading
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Amen Button */}
+            <Button 
+              variant="primary" 
+              size="lg" 
+              fullWidth
+              onClick={handlePress}
+              className="mb-6"
+            >
+              <Check className="h-5 w-5 mr-2" />
+              Amen
+            </Button>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFavorite}
+                  aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                  className={cn('gap-1.5', isFav && 'text-red-600 dark:text-red-400')}
+                >
+                  <Heart className={cn('h-4 w-4', isFav && 'fill-current')} />
+                  <span className="hidden sm:inline">{isFav ? 'Saved' : 'Save'}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopy}
+                  aria-label="Copy prayer"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowShareModal(true)}
+                  aria-label="Share prayer"
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </Button>
+
+                {prayer.audioUrl && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAudio}
+                    aria-label={audioPlaying ? 'Pause audio' : 'Play audio'}
+                  >
+                    <Volume2 className={cn('h-4 w-4', audioPlaying && 'text-primary-600')} />
+                    <span className="hidden sm:inline">{audioPlaying ? 'Playing...' : 'Listen'}</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            onShare={handleShare}
+            onCopy={handleCopy}
+          />
+        </Card>
+
+        {/* Related Prayers */}
+        <RelatedPrayers currentPrayerId={prayer.id} topic={prayer.topic} />
+      </div>
+    );
+  }
+
+  function RelatedPrayers({ currentPrayerId, topic }: { currentPrayerId: string; topic: string }) {
+    // In a real app, this would fetch related prayers from the same topic
+    const relatedPrayers = [
+      { id: 'morning-dedication', title: 'Morning Dedication', topic: 'Daily Prayers' },
+      { id: 'peace-worry', title: 'Prayer for Anxiety', topic: 'Anxiety & Peace' },
+      { id: 'guidance-decision', title: 'Guidance for Decisions', topic: 'Guidance & Wisdom' },
+      { id: 'healing-sickness', title: 'Prayer for Healing', topic: 'Healing & Health' },
+      { id: 'protection-family', title: 'Protection for Family', topic: 'Protection & Safety' },
+      { id: 'gratitude-daily', title: 'Daily Gratitude', topic: 'Gratitude & Worship' },
+    ].filter(p => p.id !== currentPrayerId).slice(0, 3);
+
+    return (
+      <section aria-labelledby="related-prayers-heading">
+        <h2 id="related-prayers-heading" className="text-xl font-serif font-bold text-gray-900 dark:text-white mb-4">
+          More Prayers
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {relatedPrayers.map((prayer) => (
+            <a
+              key={prayer.id}
+              href={`/prayer/${prayer.id}`}
+              className="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:shadow-card hover:border-primary-200 dark:hover:border-primary-800 transition-all"
+            >
+              <span className="px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                {prayer.topic}
+              </span>
+              <h3 className="font-semibold text-gray-900 dark:text-white mt-2 mb-1">{prayer.title}</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Pray now</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  function ShareModal({ isOpen, onClose, onShare, onCopy }: any) {
+    return (
+      <div className={isOpen ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50' : 'hidden'} onClick={onClose}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share Prayer</h3>
+          <div className="space-y-3">
+            <button onClick={() => { onShare(); onClose(); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <Share2 className="h-5 w-5" />
+              Share
+            </button>
+            <button onClick={() => { onCopy(); onClose(); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <Copy className="h-5 w-5" />
+              Copy Text
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+</script>

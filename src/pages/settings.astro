@@ -1,0 +1,361 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+---
+
+<MainLayout title="Settings - Bible Daily" description="Customize your Bible Daily experience.">
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="mb-10">
+      <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 dark:text-white mb-2">
+        Settings
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        Customize your Bible Daily experience to match your preferences.
+      </p>
+    </header>
+
+    <SettingsForm client:load />
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  import { useState, useEffect } from 'react';
+  import { useApp } from '@/context/AppContext';
+  import { Button } from '@/components/ui/Button';
+  import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+  import { Select } from '@/components/ui/Input';
+  import { languageConfig, supportedLanguages, type SupportedLanguage } from '@/lib/i18n';
+  import { getAvailableTranslations } from '@/lib/bible-api';
+  import { cn } from '@/lib/utils';
+
+  function SettingsForm() {
+    const {
+      preferences,
+      updatePreferences,
+      resetPreferences,
+      language,
+      setLanguage,
+      availableLanguages,
+      currentTranslation,
+      setTranslation,
+      availableTranslations,
+      theme,
+      setTheme,
+      resolvedTheme,
+      isOfflineMode,
+      toggleOfflineMode,
+    } = useApp();
+
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+    const languageOptions = availableLanguages.map((lang) => ({
+      value: lang,
+      label: `${languageConfig[lang].flag} ${languageConfig[lang].nativeName}`,
+    }));
+
+    const translationOptions = availableTranslations.map((t) => ({
+      value: t.code,
+      label: `${t.name} (${t.fullName})`,
+    }));
+
+    const themeOptions = [
+      { value: 'light', label: 'Light' },
+      { value: 'dark', label: 'Dark' },
+      { value: 'system', label: 'System' },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* Language & Translation */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>Language & Translation</CardTitle>
+            <CardDescription>
+              Choose your preferred language and Bible translation
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Language
+              </label>
+              <Select
+                options={languageOptions}
+                value={language}
+                onChange={setLanguage}
+                placeholder="Select Language"
+                fullWidth
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Bible Translation
+              </label>
+              <Select
+                options={translationOptions}
+                value={currentTranslation.code}
+                onChange={setTranslation}
+                placeholder="Select Translation"
+                fullWidth
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Appearance */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>Appearance</CardTitle>
+            <CardDescription>
+              Customize how Bible Daily looks on your device
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Theme
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {themeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTheme(option.value as 'light' | 'dark' | 'system')}
+                    className={cn(
+                      'flex flex-col items-center gap-2 px-4 py-4 rounded-xl border-2 transition-all',
+                      theme === option.value
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                    )}
+                  >
+                    <span className="text-lg">
+                      {option.value === 'light' && '☀️'}
+                      {option.value === 'dark' && '🌙'}
+                      {option.value === 'system' && '💻'}
+                    </span>
+                    <span className="font-medium capitalize">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Font Size
+              </label>
+              <div className="flex gap-2">
+                {['small', 'medium', 'large', 'extra-large'].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => updatePreferences({ fontSize: size as any })}
+                    className={cn(
+                      'flex-1 py-3 rounded-xl border-2 transition-all text-sm font-medium',
+                      preferences.fontSize === size
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                    )}
+                  >
+                    {size.charAt(0).toUpperCase() + size.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>
+              Manage when and how you receive reminders
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Daily Verse Reminder</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Receive a notification with the verse of the day
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={preferences.notificationsEnabled}
+                onChange={(e) => updatePreferences({ notificationsEnabled: e.target.checked })}
+                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Prayer Reminders</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Get reminded to pray throughout the day
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={preferences.prayerReminders}
+                onChange={(e) => updatePreferences({ prayerReminders: e.target.checked })}
+                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+            </div>
+            {preferences.notificationsEnabled && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Notification Time
+                </label>
+                <input
+                  type="time"
+                  value={preferences.dailyVerseTime}
+                  onChange={(e) => updatePreferences({ dailyVerseTime: e.target.value })}
+                  className="w-full max-w-xs px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Audio & Offline */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>Audio & Offline</CardTitle>
+            <CardDescription>
+              Configure audio playback and offline access
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Auto-play Audio</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Automatically play verse/prayer audio when opening
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={preferences.autoPlayAudio}
+                onChange={(e) => updatePreferences({ autoPlayAudio: e.target.checked })}
+                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Offline Mode</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Cache content for reading without internet
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isOfflineMode}
+                onChange={toggleOfflineMode}
+                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Management */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>Data & Privacy</CardTitle>
+            <CardDescription>
+              Manage your stored data and privacy settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Clear Cache</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Remove all cached verses and prayers
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => {}}>
+                Clear Cache
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">Export Data</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Download your favorites and preferences
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => {}}>
+                Export
+              </Button>
+            </div>
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+              <Button variant="danger" onClick={() => setShowResetConfirm(true)}>
+                Reset All Settings
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* About */}
+        <Card variant="outlined" padding="none">
+          <CardHeader className="p-6 pb-0">
+            <CardTitle>About</CardTitle>
+            <CardDescription>
+              App information and links
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0 space-y-4">
+            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex justify-between">
+                <span>Version</span>
+                <span className="font-mono text-gray-900 dark:text-white">1.0.0</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Build</span>
+                <span className="font-mono text-gray-900 dark:text-white">2026.11.24</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <a href="/privacy" className="text-primary-600 dark:text-primary-400 hover:underline text-sm">
+                Privacy Policy
+              </a>
+              <a href="/terms" className="text-primary-600 dark:text-primary-400 hover:underline text-sm">
+                Terms of Service
+              </a>
+              <a href="/contact" className="text-primary-600 dark:text-primary-400 hover:underline text-sm">
+                Contact Us
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reset Confirmation Modal */}
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowResetConfirm(false)}>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Reset All Settings?</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                This will restore all settings to their default values. This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setShowResetConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button variant="danger" onClick={() => { resetPreferences(); setShowResetConfirm(false); }}>
+                  Reset
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+</script>

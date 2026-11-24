@@ -1,0 +1,330 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import DailyVerseDisplay from '@/components/features/DailyVerse';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { getDailyVerse } from '@/lib/bible-api';
+import { useApp } from '@/context/AppContext';
+---
+
+<MainLayout 
+  title="Daily Verse - Bible Daily" 
+  description="Today's Bible verse with reflection and prayer."
+>
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <VersePage client:load />
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  import { useState, useEffect } from 'react';
+  import { useDailyVerse } from '@/hooks/useDailyVerse';
+  import { useParams } from 'astro:transitions';
+  import { formatDate } from '@/lib/utils';
+  import { Card, CardContent } from '@/components/ui/Card';
+  import { Button } from '@/components/ui/Button';
+  import { ArrowLeft, Share2, Copy, Volume2, Heart, Sparkles, BookOpen } from 'lucide-react';
+  import { useApp } from '@/context/AppContext';
+  import { cn } from '@/lib/utils';
+
+  function VersePage() {
+    const params = useParams();
+    const dateParam = params.date;
+    const targetDate = dateParam ? new Date(dateParam) : new Date();
+    const { verse, previousDate, nextDate, loading, error, refetch } = useDailyVerse(targetDate);
+    const { language, currentTranslation, resolvedTheme, toggleFavoriteVerse, isFavoriteVerse } = useApp();
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [audioPlaying, setAudioPlaying] = useState(false);
+
+    const verseId = verse ? `${verse.reference}-${verse.date}` : '';
+    const isFav = verseId ? isFavoriteVerse(verseId) : false;
+
+    const handleShare = async () => {
+      if (!verse) return;
+      const text = `"${verse.text}"\n\n— ${verse.reference} (${verse.translation})`;
+      try {
+        await navigator.share({
+          title: `Daily Verse - ${verse.reference}`,
+          text,
+          url: window.location.href,
+        });
+      } catch {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+      setShowShareModal(false);
+    };
+
+    const handleCopy = async () => {
+      if (!verse) return;
+      const text = `"${verse.text}"\n\n— ${verse.reference} (${verse.translation})`;
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleAudio = () => {
+      setAudioPlaying(true);
+      setTimeout(() => setAudioPlaying(false), 3000);
+    };
+
+    const handleFavorite = () => {
+      if (verse) toggleFavoriteVerse(verse);
+    };
+
+    if (loading) {
+      return (
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          <Card variant="elevated" padding="lg">
+            <div className="space-y-4">
+              <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    if (error || !verse) {
+      return (
+        <Card variant="elevated" padding="lg" className="text-center">
+          <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+          <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">Unable to load verse</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{error || 'No verse available for this date'}</p>
+          <Button onClick={refetch} variant="outline">Try Again</Button>
+        </Card>
+      );
+    }
+
+    const formattedDate = formatDate(verse.date, language === 'hi' ? 'hi-IN' : 'en-US');
+
+    return (
+      <div className="space-y-6">
+        {/* Back Navigation */}
+        <div className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline">
+            <ArrowLeft className="h-5 w-5" />
+            <span>Back to Home</span>
+          </a>
+        </div>
+
+        {/* Main Verse Card */}
+        <Card variant="elevated" padding="lg" className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 opacity-5 hidden lg:block">
+            <Sparkles className="h-32 w-32 text-primary-500" />
+          </div>
+
+          <div className="relative z-10">
+            {/* Date & Translation */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <span className="font-medium">{formattedDate}</span>
+                <span>•</span>
+                <span>{verse.translation}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => previousDate && window.location.assign(`/verse/${previousDate}`)}
+                  disabled={!previousDate}
+                  aria-label="Previous day"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => nextDate && window.location.assign(`/verse/${nextDate}`)}
+                  disabled={!nextDate}
+                  aria-label="Next day"
+                >
+                  <ArrowLeft className="h-5 w-5 rotate-180" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Verse Text */}
+            <blockquote className="not-italic mb-6">
+              <p className={cn(
+                'text-verse-lg font-serif text-gray-900 dark:text-white leading-relaxed',
+                language === 'hi' && 'font-hindi',
+                resolvedTheme === 'dark' && 'text-white'
+              )}>
+                &ldquo;{verse.text}&rdquo;
+              </p>
+              <footer className="mt-4 text-right">
+                <cite className="text-xl font-medium text-gray-700 dark:text-gray-300 not-italic">
+                  — {verse.reference}
+                </cite>
+              </footer>
+            </blockquote>
+
+            {/* Reflection Section */}
+            <ReflectionSection verse={verse} />
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFavorite}
+                  aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                  className={cn('gap-1.5', isFav && 'text-red-600 dark:text-red-400')}
+                >
+                  <Heart className={cn('h-4 w-4', isFav && 'fill-current')} />
+                  <span className="hidden sm:inline">{isFav ? 'Saved' : 'Save'}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopy}
+                  aria-label="Copy verse"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowShareModal(true)}
+                  aria-label="Share verse"
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </Button>
+
+                {verse.audioUrl && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAudio}
+                    aria-label={audioPlaying ? 'Pause audio' : 'Play audio'}
+                  >
+                    <Volume2 className={cn('h-4 w-4', audioPlaying && 'text-primary-600')} />
+                    <span className="hidden sm:inline">{audioPlaying ? 'Playing...' : 'Listen'}</span>
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <span className="px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 font-medium">
+                  {currentTranslation.code}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            onShare={handleShare}
+            onCopy={handleCopy}
+          />
+        </Card>
+
+        {/* Related Prayers */}
+        <RelatedPrayers verse={verse} />
+      </div>
+    );
+  }
+
+  function ReflectionSection({ verse }: { verse: any }) {
+    const reflections = [
+      {
+        title: 'Reflection',
+        content: `Consider how ${verse.reference} speaks to your current situation. What is God highlighting for you today?`
+      },
+      {
+        title: 'Application',
+        content: 'Take a moment to write down one practical way you can live out this truth today.'
+      },
+      {
+        title: 'Prayer',
+        content: `Heavenly Father, thank You for Your Word. Help me to hide this verse in my heart and live it out. In Jesus' name, Amen.`
+      }
+    ];
+
+    return (
+      <div className="space-y-4">
+        {reflections.map((section, index) => (
+          <div key={index} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex items-center justify-center text-sm">
+                {index + 1}
+              </span>
+              {section.title}
+            </h4>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">{section.content}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function RelatedPrayers({ verse }: { verse: any }) {
+    // In a real app, this would fetch related prayers based on verse topics
+    const relatedPrayers = [
+      { id: 'morning-dedication', title: 'Morning Dedication', topic: 'Daily Prayers' },
+      { id: 'peace-worry', title: 'Prayer for Anxiety', topic: 'Anxiety & Peace' },
+      { id: 'guidance-decision', title: 'Guidance for Decisions', topic: 'Guidance & Wisdom' },
+    ];
+
+    return (
+      <section aria-labelledby="related-prayers-heading">
+        <h2 id="related-prayers-heading" className="text-xl font-serif font-bold text-gray-900 dark:text-white mb-4">
+          Related Prayers
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {relatedPrayers.map((prayer) => (
+            <a
+              key={prayer.id}
+              href={`/prayer/${prayer.id}`}
+              className="p-4 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:shadow-card hover:border-primary-200 dark:hover:border-primary-800 transition-all"
+            >
+              <span className="px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+                {prayer.topic}
+              </span>
+              <h3 className="font-semibold text-gray-900 dark:text-white mt-2 mb-1">{prayer.title}</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Pray with this verse</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  function ShareModal({ isOpen, onClose, onShare, onCopy }: any) {
+    return (
+      <div className={isOpen ? 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50' : 'hidden'} onClick={onClose}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share Verse</h3>
+          <div className="space-y-3">
+            <button onClick={() => { onShare(); onClose(); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <Share2 className="h-5 w-5" />
+              Share
+            </button>
+            <button onClick={() => { onCopy(); onClose(); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <Copy className="h-5 w-5" />
+              Copy Text
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+</script>

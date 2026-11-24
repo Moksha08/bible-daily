@@ -1,0 +1,290 @@
+{
+  "topics": [
+    {
+      "id": "daily",
+      "name": "Daily Prayers",
+      "description": "Morning, evening, and daily devotional prayers",
+      "icon": "sun",
+      "color": "accent",
+      "order": 1,
+      "subtopics": [
+        {
+          "id": "morning",
+          "name": "Morning Prayers",
+          "description": "Start your day with God",
+          "prayerIds": ["morning-dedication", "morning-protection", "morning-guidance", "morning-gratitude"]
+        },
+        {
+          "id": "evening",
+          "name": "Evening Prayers",
+          "description": "End your day in peace",
+          "prayerIds": ["evening-thanksgiving", "evening-forgiveness", "evening-peace", "evening-protection"]
+        },
+        {
+          "id": "mealtime",
+          "name": "Mealtime Prayers",
+          "description": "Bless your food and give thanks",
+          "prayerIds": ["meal-blessing", "meal-thanksgiving", "meal-provision"]
+        }
+      ]
+    },
+    {
+      "id": "healing",
+      "name": "Healing & Health",
+      "description": "Prayers for physical, emotional, and spiritual healing",
+      "icon": "heart-pulse",
+      "color": "red",
+      "order": 2,
+      "subtopics": [
+        {
+          "id": "physical-healing",
+          "name": "Physical Healing",
+          "description": "For sickness, disease, and recovery",
+          "prayerIds": ["healing-sickness", "healing-surgery", "healing-chronic", "healing-recovery"]
+        },
+        {
+          "id": "emotional-healing",
+          "name": "Emotional Healing",
+          "description": "For anxiety, depression, grief, and trauma",
+          "prayerIds": ["healing-anxiety", "healing-depression", "healing-grief", "healing-trauma"]
+        },
+        {
+          "id": "mental-health",
+          "name": "Mental Health",
+          "description": "For peace of mind and clarity",
+          "prayerIds": ["peace-mind", "clarity-thoughts", "freedom-fear", "sound-mind"]
+        }
+      ]
+    },
+    {
+      "id": "protection",
+      "name": "Protection & Safety",
+      "description": "Prayers for divine protection and safety",
+      "icon": "shield",
+      "color": "blue",
+      "order": 3,
+      "subtopics": [
+        {
+          "id": "personal-protection",
+          "name": "Personal Protection",
+          "description": "For yourself and your family",
+          "prayerIds": ["protection-daily", "protection-family", "protection-children", "protection-travel"]
+        },
+        {
+          "id": "spiritual-protection",
+          "name": "Spiritual Protection",
+          "description": "Against spiritual attacks and temptation",
+          "prayerIds": ["protection-spiritual", "protection-temptation", "protection-deliverance", "armor-god"]
+        },
+        {
+          "id": "financial-protection",
+          "name": "Financial Protection",
+          "description": "For provision and financial security",
+          "prayerIds": ["protection-finances", "provision-needs", "debt-freedom", "wisdom-stewardship"]
+        }
+      ]
+    },
+    {
+      "id": "anxiety",
+      "name": "Anxiety & Peace",
+      "description": "Prayers for worry, stress, and finding God's peace",
+      "icon": "cloud-off",
+      "color": "purple",
+      "order": 4,
+      "subtopics": [
+        {
+          "id": "worry-stress",
+          "name": "Worry & Stress",
+          "description": "Cast your cares on Him",
+          "prayerIds": ["peace-worry", "peace-stress", "peace-overwhelmed", "trust-god"]
+        },
+        {
+          "id": "fear",
+          "name": "Fear & Courage",
+          "description": "Perfect love casts out fear",
+          "prayerIds": ["courage-fear", "courage-unknown", "courage-future", "courage-decision"]
+        },
+        {
+          "id": "sleep-rest",
+          "name": "Sleep & Rest",
+          "description": "Peaceful sleep and renewal",
+          "prayerIds": ["peaceful-sleep", "rest-weary", "night-protection", "sweet-sleep"]
+        }
+      ]
+    },
+    {
+      "id": "relationships",
+      "name": "Relationships & Family",
+      "description": "Prayers for marriage, parenting, and relationships",
+      "icon": "users",
+      "color": "pink",
+      "order": 5,
+      "subtopics": [
+        {
+          "id": "marriage",
+          "name": "Marriage",
+          "description": "Strengthen your marriage",
+          "prayerIds": ["marriage-unity", "marriage-love", "marriage-forgiveness", "marriage-struggles"]
+        },
+        {
+          "id": "parenting",
+          "name": "Parenting",
+          "description": "Wisdom for raising children",
+          "prayerIds": ["parenting-wisdom", "parenting-patience", "parenting-children-salvation", "parenting-protection"]
+        },
+        {
+          "id": "friendship",
+          "name": "Friendship & Community",
+          "description": "Godly relationships",
+          "prayerIds": ["friendship-godly", "community-unity", "reconciliation", "loneliness"]
+        }
+      ]
+    },
+    {
+      "id": "guidance",
+      "name": "Guidance & Wisdom",
+      "description": "Prayers for direction, decisions, and discernment",
+      "icon": "compass",
+      "color": "green",
+      "order": 6,
+      "subtopics": [
+        {
+          "id": "decision-making",
+          "name": "Decision Making",
+          "description": "Seek God's will in choices",
+          "prayerIds": ["guidance-decision", "guidance-career", "guidance-major", "guidance-daily"]
+        },
+        {
+          "id": "wisdom-discernment",
+          "name": "Wisdom & Discernment",
+          "description": "Spiritual insight and understanding",
+          "prayerIds": ["wisdom-daily", "discernment-spiritual", "understanding-word", "counsel-godly"]
+        },
+        {
+          "id": "life-purpose",
+          "name": "Life Purpose & Calling",
+          "description": "Discover God's plan for your life",
+          "prayerIds": ["purpose-discovery", "calling-clarity", "vocation-direction", "gifts-talents"]
+        }
+      ]
+    },
+    {
+      "id": "spiritual-growth",
+      "name": "Spiritual Growth",
+      "description": "Prayers for deeper faith and spiritual maturity",
+      "icon": "flame",
+      "color": "orange",
+      "order": 7,
+      "subtopics": [
+        {
+          "id": "faith-trust",
+          "name": "Faith & Trust",
+          "description": "Grow in faith and dependence on God",
+          "prayerIds": ["faith-increase", "trust-god", "faith-doubt", "faith-mountains"]
+        },
+        {
+          "id": "holy-spirit",
+          "name": "Holy Spirit",
+          "description": "Invite the Spirit's work in your life",
+          "prayerIds": ["spirit-fill", "spirit-gifts", "spirit-fruit", "spirit-guidance"]
+        },
+        {
+          "id": "repentance-forgiveness",
+          "name": "Repentance & Forgiveness",
+          "description": "Return to God with a contrite heart",
+          "prayerIds": ["repentance-personal", "forgiveness-others", "forgiveness-self", "restoration"]
+        }
+      ]
+    },
+    {
+      "id": "gratitude",
+      "name": "Gratitude & Worship",
+      "description": "Prayers of thanksgiving and praise",
+      "icon": "music",
+      "color": "yellow",
+      "order": 8,
+      "subtopics": [
+        {
+          "id": "thanksgiving",
+          "name": "Thanksgiving",
+          "description": "Count your blessings",
+          "prayerIds": ["gratitude-daily", "gratitude-salvation", "gratitude-provision", "gratitude-trials"]
+        },
+        {
+          "id": "praise-worship",
+          "name": "Praise & Worship",
+          "description": "Exalt God for who He is",
+          "prayerIds": ["praise-god", "worship-adore", "praise-attributes", "praise-creation"]
+        }
+      ]
+    },
+    {
+      "id": "intercession",
+      "name": "Intercession & Others",
+      "description": "Praying for others and the world",
+      "icon": "globe",
+      "color": "teal",
+      "order": 9,
+      "subtopics": [
+        {
+          "id": "nation-leaders",
+          "name": "Nation & Leaders",
+          "description": "For government and authorities",
+          "prayerIds": ["nation-leaders", "nation-peace", "nation-justice", "nation-revival"]
+        },
+        {
+          "id": "persecuted-church",
+          "name": "Persecuted Church",
+          "description": "For believers facing persecution",
+          "prayerIds": ["persecuted-strength", "persecuted-protection", "persecuted-freedom", "persecuted-faithfulness"]
+        },
+        {
+          "id": "missions-evangelism",
+          "name": "Missions & Evangelism",
+          "description": "For the spread of the Gospel",
+          "prayerIds": ["missions-workers", "missions-harvest", "evangelism-boldness", "unreached-peoples"]
+        },
+        {
+          "id": "lost-salvation",
+          "name": "Lost & Salvation",
+          "description": "For unsaved loved ones",
+          "prayerIds": ["salvation-family", "salvation-friends", "salvation-colleagues", "salvation-nations"]
+        }
+      ]
+    },
+    {
+      "id": "seasonal",
+      "name": "Seasonal & Occasions",
+      "description": "Prayers for special times and seasons",
+      "icon": "calendar",
+      "color": "indigo",
+      "order": 10,
+      "subtopics": [
+        {
+          "id": "advent-christmas",
+          "name": "Advent & Christmas",
+          "description": "Prepare for Christ's coming",
+          "prayerIds": ["advent-hope", "advent-peace", "advent-joy", "advent-love", "christmas-birth"]
+        },
+        {
+          "id": "lent-easter",
+          "name": "Lent & Easter",
+          "description": "Journey to the cross and resurrection",
+          "prayerIds": ["lent-repentance", "lent-sacrifice", "good-friday", "easter-resurrection", "easter-hope"]
+        },
+        {
+          "id": "pentecost",
+          "name": "Pentecost",
+          "description": "Celebrate the Holy Spirit",
+          "prayerIds": ["pentecost-spirit", "pentecost-power", "pentecost-unity", "pentecost-witness"]
+        },
+        {
+          "id": "new-year",
+          "name": "New Year",
+          "description": "Dedicate the year to God",
+          "prayerIds": ["new-year-dedication", "new-year-vision", "new-year-habits", "new-year-trust"]
+        }
+      ]
+    }
+  ]
+}

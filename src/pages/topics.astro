@@ -1,0 +1,125 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import TopicCard from '@/components/features/TopicCard';
+import topicsData from '@/content/prayers/topics.json';
+---
+
+<MainLayout title="Prayer Topics - Bible Daily" description="Explore prayer categories including healing, anxiety, gratitude, protection, and more.">
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <header class="mb-12">
+      <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 dark:text-white mb-3">
+        Prayer Topics
+      </h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+        Browse prayers by category. Each topic contains carefully crafted prayers for specific situations and needs.
+      </p>
+    </header>
+
+    <!-- All Topics -->
+    <section aria-labelledby="all-topics-heading">
+      <h2 id="all-topics-heading" class="sr-only">All Prayer Topics</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {topicsData.topics.map((topic: any) => (
+          <TopicCard
+            key={topic.id}
+            topic={topic}
+            variant="featured"
+            client:visible
+          />
+        ))}
+      </div>
+    </section>
+
+    <!-- Subtopic Details (for URL params) -->
+    <SubtopicDetail client:visible />
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  import { useState, useEffect } from 'react';
+  import { usePrayers } from '@/hooks/usePrayers';
+  import { PrayerCard } from '@/components/features/PrayerCard';
+  import { useParams } from 'astro:transitions';
+
+  function SubtopicDetail() {
+    const params = useParams();
+    const subtopicId = params.subtopic;
+    const [activeSubtopic, setActiveSubtopic] = useState<string | null>(null);
+    const { prayers, loading } = usePrayers(undefined, subtopicId);
+
+    if (!subtopicId) return null;
+
+    // Find subtopic info from topics data
+    const topics = JSON.parse(`{topicsData}`);
+    let subtopicInfo = null;
+    
+    for (const topic of topics.topics) {
+      if (topic.subtopics) {
+        const found = topic.subtopics.find((s: any) => s.id === subtopicId);
+        if (found) {
+          subtopicInfo = { ...found, parentTopic: topic.name };
+          break;
+        }
+      }
+    }
+
+    if (!subtopicInfo) return null;
+
+    return (
+      <section class="mt-12" aria-labelledby="subtopic-heading">
+        <div class="mb-6">
+          <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <a href="/topics" class="hover:underline">Topics</a>
+            <span>/</span>
+            <a href={`/topics/${subtopicInfo.parentTopic.toLowerCase().replace(/\s+/g, '-')}`} class="hover:underline">
+              {subtopicInfo.parentTopic}
+            </a>
+            <span>/</span>
+            <span class="text-gray-900 dark:text-white font-medium">{subtopicInfo.name}</span>
+          </nav>
+          <h2 id="subtopic-heading" class="text-2xl font-serif font-bold text-gray-900 dark:text-white mb-2">
+            {subtopicInfo.name}
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">{subtopicInfo.description}</p>
+        </div>
+
+        {loading ? (
+          <div class="space-y-4">
+            {[1,2,3].map(i => (
+              <div key={i} class="animate-pulse p-6 rounded-xl bg-gray-100 dark:bg-gray-800">
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-3"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="space-y-4">
+            {prayers.map((prayer: any) => (
+              <PrayerCard key={prayer.id} prayer={prayer} variant="default" client:visible />
+            ))}
+            {prayers.length === 0 && (
+              <div class="text-center py-12">
+                <svg class="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-gray-500 dark:text-gray-400">No prayers found for this subtopic</p>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    );
+  }
+</script>

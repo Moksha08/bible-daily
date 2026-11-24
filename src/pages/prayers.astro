@@ -1,0 +1,120 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import TopicCard from '@/components/features/TopicCard';
+import topicsData from '@/content/prayers/topics.json';
+---
+
+<MainLayout title="Prayers - Bible Daily" description="Find prayers for every situation. Browse our collection of topic-based prayers in multiple languages.">
+  <slot name="header">
+    <Header client:load />
+  </slot>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <header class="mb-12">
+      <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 dark:text-white mb-3">
+        Prayers for Every Season
+      </h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+        Discover prayers organized by topic. Whether you're seeking healing, guidance, peace, or wanting to give thanks, find the right words for your heart.
+      </p>
+    </header>
+
+    <!-- Topic Grid -->
+    <section aria-labelledby="topics-heading">
+      <h2 id="topics-heading" class="sr-only">Prayer Topics</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {topicsData.topics.map((topic: any) => (
+          <TopicCard
+            key={topic.id}
+            topic={topic}
+            variant="default"
+            client:visible
+          />
+        ))}
+      </div>
+    </section>
+
+    <!-- Featured Prayers Section -->
+    <section class="mt-16" aria-labelledby="featured-heading">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="featured-heading" class="text-2xl sm:text-3xl font-serif font-bold text-gray-900 dark:text-white">
+          Popular Prayers
+        </h2>
+        <a href="/prayers/all" class="text-primary-600 dark:text-primary-400 hover:underline text-sm font-medium">
+          View All →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <FeaturedPrayerCard
+          title="Morning Dedication"
+          topic="Daily Prayers"
+          excerpt="Heavenly Father, I thank You for the gift of this new day. I dedicate my heart, mind, hands, and feet to You..."
+          duration="1 min"
+        />
+        <FeaturedPrayerCard
+          title="Prayer for Anxiety"
+          topic="Healing & Health"
+          excerpt="Father, my heart races and my mind spins with 'what-ifs.' But You said to cast all my anxiety on You because You care for me..."
+          duration="1 min"
+        />
+        <FeaturedPrayerCard
+          title="Protection for Family"
+          topic="Protection & Safety"
+          excerpt="Lord, I bring each member of my family before You. Hedge them about on every side. Guard their minds, hearts, bodies, and spirits..."
+          duration="1 min"
+        />
+        <FeaturedPrayerCard
+          title="Guidance for Decisions"
+          topic="Guidance & Wisdom"
+          excerpt="Lord, I stand at a crossroads. Your Word promises that if I acknowledge You in all my ways, You will direct my paths..."
+          duration="1 min"
+        />
+        <FeaturedPrayerCard
+          title="Evening Thanksgiving"
+          topic="Daily Prayers"
+          excerpt="Lord, as this day draws to a close, I thank You for every moment. For the joys and the sorrows, the victories and the lessons..."
+          duration="1 min"
+        />
+        <FeaturedPrayerCard
+          title="Prayer for Healing"
+          topic="Healing & Health"
+          excerpt="Jehovah Rapha, the Lord who heals, I come before You with a body that aches and a spirit that longs for wholeness..."
+          duration="1 min"
+        />
+      </div>
+    </section>
+  </div>
+
+  <slot name="footer">
+    <Footer />
+  </slot>
+</MainLayout>
+
+<script>
+  function FeaturedPrayerCard({ title, topic, excerpt, duration }) {
+    return (
+      <article class="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:shadow-card hover:border-primary-200 dark:hover:border-primary-800 transition-all">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="px-2 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium">
+            {topic}
+          </span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{title}</h3>
+        <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3">{excerpt}</p>
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+          <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {duration}
+          </span>
+          <a href="/prayer/morning-dedication" class="text-primary-600 dark:text-primary-400 text-sm font-medium hover:underline">
+            Pray →
+          </a>
+        </div>
+      </article>
+    );
+  }
+</script>
