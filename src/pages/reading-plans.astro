@@ -31,6 +31,7 @@ import { Footer } from '@/components/layout/Footer';
   import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
   import { Button } from '@/components/ui/Button';
   import { BookOpen, CheckCircle, Clock, ArrowRight, Calendar, Percent } from 'lucide-react';
+  import { cn } from '@/lib/utils';
 
   const readingPlans = [
     {
@@ -58,7 +59,7 @@ import { Footer } from '@/components/layout/Footer';
     {
       id: 'psalms-30',
       title: 'Psalms in 30 Days',
-      description: 'Pray through the Psalter - the Bible's prayer book. Five psalms a day to shape your heart.',
+      description: 'Pray through the Psalter - the Bible\'s prayer book. Five psalms a day to shape your heart.',
       duration: '30 days',
       chaptersPerDay: '5',
       totalChapters: 150,
@@ -101,6 +102,24 @@ import { Footer } from '@/components/layout/Footer';
     },
   ];
 
+  const colorClasses: Record<string, string> = {
+    primary: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border-primary-200 dark:border-primary-800',
+    secondary: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 border-secondary-200 dark:border-secondary-800',
+    accent: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 border-accent-200 dark:border-accent-800',
+    orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+    purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+  };
+
+  const progressColorClasses: Record<string, string> = {
+    primary: 'bg-primary-600',
+    secondary: 'bg-secondary-600',
+    accent: 'bg-accent-600',
+    orange: 'bg-orange-600',
+    blue: 'bg-blue-600',
+    purple: 'bg-purple-600',
+  };
+
   function ReadingPlansList() {
     return (
       <div className="space-y-8">
@@ -126,16 +145,8 @@ import { Footer } from '@/components/layout/Footer';
   }
 
   function ReadingPlanCard({ plan }: { plan: typeof readingPlans[0] }) {
-    const colorClasses = {
-      primary: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border-primary-200 dark:border-primary-800',
-      secondary: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 border-secondary-200 dark:border-secondary-800',
-      accent: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 border-accent-200 dark:border-accent-800',
-      orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800',
-      blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-      purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-    };
-
-    const bgClass = colorClasses[plan.color as keyof typeof colorClasses] || colorClasses.primary;
+    const bgClass = colorClasses[plan.color] || colorClasses.primary;
+    const progressBgClass = progressColorClasses[plan.color] || progressColorClasses.primary;
 
     return (
       <Card variant="elevated" padding="none" className="overflow-hidden hover:shadow-elevated transition-shadow">
@@ -180,7 +191,7 @@ import { Footer } from '@/components/layout/Footer';
               </div>
               <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', bgClass.replace('bg-', 'bg-').replace('text-', 'bg-').replace('border-', 'bg-'))}
+                  className={cn('h-full rounded-full transition-all', progressBgClass)}
                   style={{ width: `${plan.progress}%` }}
                 />
               </div>
